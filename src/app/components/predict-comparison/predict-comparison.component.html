@@ -1,0 +1,20 @@
+<div class="container">
+  <p-card
+    *ngFor="let alg of tableDataService.lastCalculatedRiskData$ | async"
+    [header]="''"
+  >
+    <span
+      *ngIf="alg.riskFactor"
+      [ngClass]="'The' + alg.color.replace('#', '').toUpperCase()"
+      pBadge
+      value="!"
+      severity="warning"
+      >{{ alg.dueDate.split("T")[0] }}</span
+    >
+    <span
+      *ngIf="!alg.riskFactor"
+      [ngClass]="'The' + alg.color.replace('#', '').toUpperCase()"
+      >{{ alg.dueDate.split("T")[0] }}</span
+    >
+  </p-card>
+</div>

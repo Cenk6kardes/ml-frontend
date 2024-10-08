@@ -1,0 +1,224 @@
+<p-card header="">
+  <p-table
+    [value]="data"
+    dataKey="tasksId"
+    [lazy]="true"
+    (onLazyLoad)="loadData($event)"
+    [paginator]="true"
+    [rows]="filteredCount"
+    styleClass="p-datatable-striped"
+    [showCurrentPageReport]="true"
+    [tableStyle]="{ 'min-width': '112rem' }"
+    currentPageReportTemplate="{first} - {last} of {totalRecords} items"
+    [rowsPerPageOptions]="[10, 20, 30, 40, 50]"
+    [totalRecords]="totalCount"
+    (onEditInit)="cellEditStart($event)"
+    (onEditComplete)="cellEditFinished($event)"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 110px">Tasks ID</th>
+        <th style="width: 130px">Work Item Type</th>
+        <th style="width: 230px">Title</th>
+        <th style="width: 150px">Category</th>
+        <th style="width: 100px">Priority</th>
+        <th style="width: 90px">Tax Year</th>
+        <th style="width: 180px">Due Date</th>
+        <th style="width: 250px">Workflow Status</th>
+        <th style="width: 250px">Task Status</th>
+        <th style="width: 90px">Status</th>
+        <th style="width: 110px">Assigned To</th>
+        <th style="width: 150px">Modified Date</th>
+        <th style="width: 110px">Modified By</th>
+        <th style="width: 180px">Created Date</th>
+        <th style="width: 110px">Created By</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr [ngClass]="{ 'row-active': item.tasksId === selectedItemIndex }">
+        <td>{{ item.tasksId }}</td>
+        <td>{{ item.taskType }}</td>
+        <td>{{ item.title }}</td>
+        <td>{{ item.category }}</td>
+        <td
+          [pEditableColumn]="item.priority"
+          pEditableColumnField="priority"
+          [pEditableColumnRowIndex]="item.tasksId"
+        >
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-dropdown
+                #priority
+                [options]="(priorities$ | async)!"
+                appendTo="body"
+                optionLabel="name"
+                optionValue="priorityId"
+                [(ngModel)]="item.priorityId"
+                (onChange)="priorityChanged($event, priority.options, item)"
+              ></p-dropdown>
+
+              <p-button
+                *ngIf="showReCalculateButton"
+                styleClass="p-button-info p-button-sm"
+                (onClick)="reCalculateRiskFactor($event, item)"
+                >Re-calculate</p-button
+              >
+            </ng-template>
+            <ng-template pTemplate="output">
+              <div class="flex-group">
+                <p>{{ item.priority }}</p>
+                <p-button
+                  icon="pi pi-chevron-down"
+                  styleClass="p-button-rounded p-button-text p-button-sm p-button-secondary"
+                ></p-button>
+              </div>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        <td>{{ item.taxYear }}</td>
+        <td
+          [pEditableColumn]="item.dueDate"
+          pEditableColumnField="dueDate"
+          [pEditableColumnRowIndex]="item.tasksId"
+          class="text-center"
+        >
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <input
+                #dueDate
+                pInputText
+                type="date"
+                [(ngModel)]="item.dueDate"
+                [min]="minDate"
+                (change)="dueDateChanged($event, item)"
+                (keypress)="blockInput($event)"
+              />
+
+              <p-button
+                *ngIf="showReCalculateButton"
+                styleClass="p-button-info p-button-sm"
+                (onClick)="reCalculateRiskFactor($event, item)"
+                >Re-calculate</p-button
+              >
+            </ng-template>
+            <ng-template pTemplate="output">
+              <span
+                *ngIf="item.missingProperties"
+                [ngClass]="
+                  'The' + item.dueDateModel.color.replace('#', '').toUpperCase()
+                "
+                [pTooltip]="
+                  'Missing Properties: ' + item.missingProperties.join(',\n')
+                "
+                pBadge
+                value="?"
+                severity="info"
+                >{{ item.dueDate }}</span
+              >
+              <span
+                *ngIf="item.dueDateModel.riskFactor && !item.missingProperties"
+                [ngClass]="
+                  'The' + item.dueDateModel.color.replace('#', '').toUpperCase()
+                "
+                pBadge
+                value="!"
+                severity="warning"
+                >{{ item.dueDate }}</span
+              >
+              <span
+                *ngIf="!item.dueDateModel.riskFactor && !item.missingProperties"
+                [ngClass]="
+                  'The' + item.dueDateModel.color.replace('#', '').toUpperCase()
+                "
+                >{{ item.dueDate }}</span
+              >
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        <td
+          [pEditableColumn]="item.workflowStatus"
+          pEditableColumnField="workflowStatus"
+          [pEditableColumnRowIndex]="item.tasksId"
+        >
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-dropdown
+                #workflowStatus
+                [options]="(workFlowStatuses$ | async)!"
+                appendTo="body"
+                [(ngModel)]="item.workflowStatusId"
+                optionLabel="workflowStatus"
+                optionValue="workflowStatusId"
+                (onChange)="
+                  workflowStatusChanged($event, workflowStatus.options, item)
+                "
+              ></p-dropdown>
+
+              <p-button
+                *ngIf="showReCalculateButton"
+                styleClass="p-button-info p-button-sm"
+                (onClick)="reCalculateRiskFactor($event, item)"
+                >Re-calculate</p-button
+              >
+            </ng-template>
+            <ng-template pTemplate="output">
+              <div class="flex-group">
+                <p>{{ item.workflowStatus }}</p>
+                <p-button
+                  icon="pi pi-chevron-down"
+                  styleClass="p-button-rounded p-button-text p-button-sm p-button-secondary"
+                ></p-button>
+              </div>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        <td>{{ item.taskStatus }}</td>
+        <td>{{ item.status }}</td>
+        <td
+          [pEditableColumn]="item.assignToUser"
+          pEditableColumnField="assignedTo"
+          [pEditableColumnRowIndex]="item.tasksId"
+          class="text-center"
+        >
+          <p-cellEditor>
+            <ng-template pTemplate="input">
+              <p-dropdown
+                #assignedUser
+                appendTo="body"
+                [options]="assignableUsers"
+                optionLabel="assignToUser"
+                optionValue="assignedTo"
+                [(ngModel)]="item.assignedTo"
+                [filter]="true"
+                filterBy="assignToUser"
+                (onChange)="
+                  assignToUserChanged($event, assignedUser.options, item)
+                "
+              ></p-dropdown>
+
+              <p-button
+                *ngIf="showReCalculateButton"
+                styleClass="p-button-info p-button-sm"
+                (onClick)="reCalculateRiskFactor($event, item)"
+                >Re-calculate</p-button
+              >
+            </ng-template>
+            <ng-template pTemplate="output">
+              <div class="flex-group">
+                <p>{{ item.assignToUser }}</p>
+                <p-button
+                  icon="pi pi-chevron-down"
+                  styleClass="p-button-rounded p-button-text p-button-sm p-button-secondary"
+                ></p-button>
+              </div>
+            </ng-template>
+          </p-cellEditor>
+        </td>
+        <td>{{ item.modifiedDate }}</td>
+        <td>{{ item.modifiedByUser }}</td>
+        <td>{{ item.createdDate }}</td>
+        <td>{{ item.createdByUser }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

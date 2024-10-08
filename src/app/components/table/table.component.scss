@@ -1,0 +1,55 @@
+:host {
+  &::ng-deep .row-active {
+    background-color: rgba(0, 0, 0, 0.15) !important;
+  }
+
+  th {
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+    overflow: hidden;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    padding: 8px 12px;
+    border-width: 0 0 1px 1px;
+  }
+
+  th,
+  td {
+    padding: 8px 12px;
+    border-style: solid;
+    border-color: inherit;
+
+  }
+
+  td {
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+
+    outline: 0;
+    font-weight: inherit;
+    text-align: inherit;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    height: 50px;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .flex-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  ::ng-deep .p-badge-warning {
+    border: 1px solid #FFF;
+  }
+}
